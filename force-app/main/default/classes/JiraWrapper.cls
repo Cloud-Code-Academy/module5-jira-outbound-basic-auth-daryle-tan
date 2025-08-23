@@ -2,7 +2,7 @@
  * Wrapper classes for Jira entities (Project and Issue)
  */
 public class JiraWrapper {
-	private static final String LEAD_ACCOUNT_ID = '1337:0123456789-bfa0-40f4-bd28-25ae65c3e5b1';
+	private static final String LEAD_ACCOUNT_ID = '630e3930b433b060db556230';
 	private static final String PROJECT_TEMPLATE_KEY = 'com.pyxis.greenhopper.jira:basic-software-development-template';
 
 	/**
@@ -66,7 +66,15 @@ public class JiraWrapper {
 		 */
 		public Map<String, Object> generateIssuePayloadMap() {
 			// Your implementation goes here
-			return null;
+			Map<String, Object> fields = new Map<String, Object>();
+			fields.put('project', new Map<String, Object>{'key' => this.projectKey});
+			fields.put('issuetype', new Map<String, Object>{'name' => this.issueType});
+			fields.put('summary', this.summary);
+			fields.put('description', formatDescription(this.description));
+
+			Map<String, Object> jsonPayload = new Map<String, Object>();
+			jsonPayload.put('fields', fields);
+			return jsonPayload;
 		}
 
 		/**
@@ -97,8 +105,23 @@ public class JiraWrapper {
 		 *   }
 		 */
 		private Map<String, Object> formatDescription(String descText) {
-			// Your implementation goes here
-			return null;
+			Map<String, Object> convertedInnerContent= new Map<String, Object>{
+				'type' => 'text',
+				'text' => descText
+			};
+
+			Map<String, Object> convertedOuterContent = new Map<String, Object>{
+				'type' => 'paragraph',
+				'content' => new List<Object>{convertedInnerContent}
+			};
+
+			Map <String, Object> convertedDesc = new Map<String, Object>{
+				'type' => 'doc',
+				'version' => 1,
+				'content' => new List<Object>{convertedOuterContent}
+			};
+
+			return convertedDesc;
 		}
 	}
 }

@@ -63,7 +63,19 @@ public class JiraCalloutQueueable implements Queueable, Database.AllowsCallouts 
 	 * 3. Update the corresponding Salesforce record with the Jira ID/Key
 	 */
 	public void execute(QueueableContext context) {
-		// Your implementation goes here
+		if (calloutType == TYPE_PROJECT && projectWrapper != null) {
+			String jiraProjectId = JiraAPIService.createProject(
+				projectWrapper
+			);
+			if(jiraProjectId != null) {
+				updateJiraProject(jiraProjectId);
+			}
+		} else if (calloutType == TYPE_ISSUE && issueWrapper != null) {
+			String jiraIssueKey = JiraAPIService.createIssue(issueWrapper);
+			if (jiraIssueKey != null) {
+				updateJiraIssue(jiraIssueKey);
+			}
+		}
 	}
 
 	/**
@@ -73,7 +85,11 @@ public class JiraCalloutQueueable implements Queueable, Database.AllowsCallouts 
 	 * with the Jira project ID returned from the API
 	 */
 	private void updateJiraProject(String jiraProjectId) {
-		// Your implementation goes here
+		if (jiraProjectId != null && recordId != null) {
+			Jira_Project__c project = [SELECT Id, Project_Key__c FROM Jira_Project__c WHERE Id = :recordId LIMIT 1];
+			project.Project_ID__c = jiraProjectId;
+			update project;
+		}
 	}
 
 	/**
@@ -84,6 +100,11 @@ public class JiraCalloutQueueable implements Queueable, Database.AllowsCallouts 
 	 * Don't forget to update the Last_Updated__c field with the current time
 	 */
 	private void updateJiraIssue(String jiraIssueKey) {
-		// Your implementation goes here
+		if (jiraIssueKey != null && recordId != null) {
+			Jira_Issue__c issue = [SELECT Id, Issue_Key__c, Last_Updated__c FROM Jira_Issue__c WHERE Id = :recordId LIMIT 1];
+			issue.Issue_Key__c = jiraIssueKey;
+			issue.Last_Updated__c = System.now();
+			update issue;
+		}
 	}
 }
